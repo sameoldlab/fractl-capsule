@@ -8,12 +8,15 @@
 	import Capsule, { Environment } from '@usecapsule/web-sdk'
 	import { capsuleConnector } from '@usecapsule/wagmi-v2-integration'
 
+	import CapsuleComp from './lib/capsule.svelte'
+
 	const storage = createStorage({ storage: localStorage })
 	const capsule = new Capsule(
 		Environment.BETA,
 		import.meta.env.CAPSULE_API_KEY,
 		{}
 	)
+	
 	export const wagmiConfig = createConfig({
 		chains: [mainnet, arbitrum],
 		storage,
@@ -37,7 +40,7 @@
 <main>
 	<h1>Fractl + Capsule</h1>
 	<FractlModal {config} />
-
+	<CapsuleComp {capsule}/>
 </main>
 
 <style>
