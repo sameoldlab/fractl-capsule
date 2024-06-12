@@ -1,0 +1,263 @@
+/* =============== */
+/* Button Classes */
+/* =============== */
+[data-fractl-trigger] {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 0.75em; /* Likely to target avatars, chain logos, token logos, or additional text */
+
+	background-color: var(--fcl-btn-background, transparent);
+	color: var(--fcl-btn-color, #f1f1f1);
+	border: var(--fcl-btn-border, none);
+	border-radius: var(--fcl-btn-border-radius, 1em);
+	font-size: var(--fcl-btn-font-size, 0.9em);
+	font-weight: var(--fcl-btn-font-weight, 600);
+	font-family: var(
+		--fcl-font-family,
+		'Helvetica Neue',
+		Inter,
+		'Arial Nova',
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		Oxygen,
+		Ubuntu,
+		Cantarell,
+		'Open Sans',
+		sans-serif
+	);
+}
+
+.fcl__btn-primary {
+	box-sizing: border-box;
+	min-width: 0;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 0.25em; /* for svg icons*/
+
+	cursor: pointer;
+	padding: 1em 1.25em;
+	transition:
+		background-color 64ms ease-in-out,
+		box-shadow 64ms ease-in-out;
+	background-clip: padding-box;
+
+	box-shadow: var(
+		--fcl-btn-box-shadow,
+		0px 0px 0px 1px rgb(0 0 0 / 0.5),
+		0px 1px 0px -1px rgb(0 0 0 / 0.5),
+		0px 1px 1px -1px rgb(0 0 0 / 0.5),
+		0px 3px 6px -3px rgb(0 0 0 / 0.5),
+		0px 0px 0px 1px hsl(0, 0%, 70%, 0.02) inset,
+		0px 1px 1px hsl(0, 0%, 80%, 0.04) inset
+	);
+
+	text-shadow:
+		1px 1px 1px rgb(0 0 0 / 0.5),
+		0px 1px 1px -1px rgb(0 0 0 / 0.5),
+		0px 3px 6px -3px rgb(0 0 0 / 0.5);
+
+	background-color: var(--fcl-btn-background, #222429);
+	color: var(--fcl-btn-color, #f1f1f1);
+	border: var(--fcl-btn-border, none);
+	border-radius: var(
+		--fcl-btn-border-radius,
+		calc(var(--fcl-border-radius, 1.8em) - var(--fcl-modal-padding, 1.25em))
+	);
+	font-size: var(--fcl-btn-font-size, 0.9em);
+	font-weight: var(--fcl-btn-font-weight, 600);
+
+	&:hover {
+		background-color: var(--fcl-btn-hover-background, #2f3139);
+		color: var(--fcl-btn-hover-color, --fcl-text-color, #f1f1f1);
+		box-shadow: var(
+			--fcl-btn-box-shadow,
+			0px 0px 0px 1px rgb(0 0 0 / 0.5),
+			0px 1px 0px -1px rgb(0 0 0 / 0.5),
+			0px 1px 1px -1px rgb(0 0 0 / 0.5),
+			0px 3px 6px -3px rgb(0 0 0 / 0.5),
+			0px 0px 0px 0.5px hsl(0, 0%, 70%, 0.02) inset,
+			0px 2px 5px hsl(0, 0%, 80%, 0.04) inset
+		);
+	}
+
+	&:active {
+		scale: 99%;
+		background-color: var(--fcl-btn-active-background, #2f3139);
+		color: var(--fcl-btn-active-color, --fcl-text-color, #f1f1f1);
+		box-shadow: var(
+			--fcl-btn-box-shadow,
+			0px 0px 0px 1px rgb(0 0 0 / 0.6),
+			0px 1px 0px -1px rgb(0 0 0 / 0.6),
+			0px 1px 1px -1px rgb(0 0 0 / 0.6),
+			0px 3px 6px -3px rgb(0 0 0 / 0.6),
+			0px 0px 1px 1px rgb(0 0 0 / 0.5) inset,
+			0px 1px 1px rgb(0 0 0 / 0.5) inset
+		);
+	}
+}
+/* 	Make a butoon icon class if this gets more complex */
+button[data-fractl-trigger] img,
+button[data-fractl-trigger] svg,
+button.fcl__btn-primary img,
+button.fcl__btn-primary svg,
+.fcl__btn-icon {
+	width: 2em;
+	/* margin-inline: .5em; */
+}
+/*	
+	Styles button as regular text. 
+	Keep specificity at 0,1,0 to allow
+	overides from additonal styles 
+*/
+.fcl__btn-text {
+	background: transparent;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	color: var(--fcl-text-btn-color, inherit);
+	font-size: var(--fcl-text-btn-font-size, 1em);
+	display: flex;
+	gap: 0.25em;
+	align-items: center;
+
+	&:hover {
+		color: var(--fcl-text-btn-hover-color, inherit);
+	}
+
+	&:active {
+		color: var(--fcl-text-btn-active-color, inherit);
+	}
+}
+
+/* =============== */
+/* Text Classes */
+/* =============== */
+.fcl__text-primary {
+	font-size: 1em;
+	font-weight: 700;
+	margin: 0;
+	padding-block-start: 1.25em;
+	padding-block-end: 0.25em;
+}
+
+.fcl__subhead {
+	opacity: 0.7; /* hacky... _/(:/)\_ */
+	font-size: 0.9em;
+	font-weight: 400;
+	text-align: center;
+	margin: 0;
+	/* padding-bottom: 1.25em; */
+	text-wrap: pretty;
+}
+
+/* =============== */
+/* Layout Classes */
+/* =============== */
+
+.fcl__layout-3col {
+	display: grid;
+	grid-template-columns: [full-start] 30px [main-start] 1fr [main-end] 30px[full-end];
+	justify-content: space-around;
+	justify-items: center;
+
+	& > * {
+		grid-column: main;
+	}
+
+	& > .fcl__3col-full {
+		width: 100%;
+		grid-column: full;
+	}
+}
+
+.fcl__layout-1col {
+	width: 100%;
+	display: grid;
+	/* grid-template-columns: 1fr; */
+	justify-items: center;
+}
+
+/* Something here feels messy. need to check on mobile */
+.fcl__graphic-primary {
+	grid-column: main;
+
+	display: grid;
+	/* grid-template-areas: 1/1; */
+	align-items: center;
+	justify-content: center;
+
+	width: 5.5em;
+}
+
+.fcl__layout-1col .fcl__graphic-primary {
+	grid-area: 1/1;
+
+	& > * {
+		grid-area: 1 / 1;
+	}
+
+	& .fcl_graphic-icon {
+		/* background: red; */
+		width: inherit;
+		margin: auto;
+		transform: scale(0.95);
+	}
+}
+
+.fcl__header-icon {
+	height: 30px;
+	width: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.fcl__header-btn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+
+	border: 1px solid hsla(0, 0%, 100%, 0%);
+	border-radius: 50%;
+	background: transparent;
+	color: var(--fcl-text-color);
+
+	transition:
+		background-color 140ms ease-in,
+		border 140ms ease-in;
+
+	&:hover {
+		border: 1px solid hsla(0, 0%, 100%, 4%);
+		background: hsla(0, 0%, 100%, 6%);
+	}
+}
+/* =============== */
+/* Utility Classes */
+/* =============== */
+
+.justify-center {
+	justify-content: center;
+	text-align: center;
+}
+.justify-between {
+	justify-content: space-between;
+}
+.rounded {
+	border-radius: 50%;
+}
+.error {
+	color: var(--fcl-text-color-error, oklch(80% 0.16 8));
+}
+button.address {
+	font-feature-settings: 'tnum', 'zero';
+	transition: opacity 150ms ease-out;
+}
+.mt-1 {
+	margin-top: 1em;
+}
