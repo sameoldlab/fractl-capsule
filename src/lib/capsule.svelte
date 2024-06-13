@@ -1,209 +1,216 @@
 <!-- capsule.org custom ui example in vue: https://github.com/capsule-org/vue-example/blob/main/ethers-v6/src/components/CapsuleButton.vue by https://github.com/nsquare3 -->
+<script lang="ts">
+	export let capsule: Capsule
+	export let config: Config
 
-<script lang="ts" setup>
-	import Capsule, { Environment } from '@usecapsule/web-sdk'
-	import { CapsuleEthersSigner } from '@usecapsule/ethers-v6-integration'
-	import { ref } from 'vue'
+	let email = ''
+	let verificationCode = ''
+	let recoveryKey = ''
+	let walletAddress: string | undefined = ''
+	let message = ''
+	let signature = ''
 
-	const capsule = new Capsule(
-		Environment.DEVELOPMENT,
-		'd0b61c2c8865aaa2fb12886651627271' // this is not sensitive so passing inline for simplicity
-	)
+	let loadingCreate = false
+	let loadingVerifyEmail = false
+	let loadingSignMessage = false
+	let loadingLogin = false
+	let loadingLogout = false
 
-	const email = ref('')
-	const verificationCode = ref('')
-	const recoveryKey = ref('')
-	const walletAddress = ref<string | undefined>('')
-	const message = ref('')
-	const signature = ref('')
-
-	const loadingCreate = ref(false)
-	const loadingVerifyEmail = ref(false)
-	const loadingSignMessage = ref(false)
-	const loadingLogin = ref(false)
-	const loadingLogout = ref(false)
-
+	let createError = { code: undefined, message: '' }
 	async function createUser() {
-		loadingCreate.value = true
+		loadingCreate = true
 
 		try {
 			await capsule.logout()
-			await capsule.createUser(email.value)
+			console.log(`creating user with email"${email}"`)
+			await capsule.createUser(email)
 		} catch (e) {
-			console.error((e as Error).message)
+			console.error(e as Error)
 		} finally {
-			loadingCreate.value = false
+			loadingCreate = false
 		}
 	}
 
 	async function verifyEmail() {
-		loadingVerifyEmail.value = true
+		loadingVerifyEmail = true
 
 		try {
-			const passkeyUrl = await capsule.verifyEmail(verificationCode.value)
+			const passkeyUrl = await capsule.verifyEmail(verificationCode)
 			window.open(passkeyUrl, 'popup', 'width=575,height=820')
 
-			recoveryKey.value = await capsule.waitForPasskeyAndCreateWallet()
-			walletAddress.value = Object.values(capsule.getWallets())[0].address
+			recoveryKey = await capsule.waitForPasskeyAndCreateWallet()
+			walletAddress = Object.values(capsule.getWallets())[0].address
 		} catch (e) {
 			console.error((e as Error).message)
 		} finally {
-			loadingVerifyEmail.value = false
+			loadingVerifyEmail = false
 		}
 	}
 
 	async function signMessage() {
-		loadingSignMessage.value = true
+		loadingSignMessage = true
 
 		try {
-			const ethersSigner = new CapsuleEthersSigner(capsule)
-			signature.value = await ethersSigner.signMessage(message.value)
+			// const ethersSigner = new CapsuleEthersSigner(capsule)
+			// signature = await ethersSigner.signMessage(message)
+			signature = await signMessage(config, { message })
+			console.log('signed message', signature)
 		} catch (e) {
 			console.error((e as Error).message)
 		} finally {
-			loadingSignMessage.value = false
+			loadingSignMessage = false
 		}
 	}
 
 	async function loginUser() {
-		loadingLogin.value = true
+		loadingLogin = true
 
 		try {
 			await capsule.logout()
-			const passkeyUrl = await capsule.initiateUserLogin(email.value)
+			const passkeyUrl = await capsule.initiateUserLogin(email)
 			window.open(passkeyUrl, 'popup', 'width=575,height=820')
 
 			await capsule.waitForLoginAndSetup()
-			walletAddress.value = Object.values(capsule.getWallets())[0].address
+			walletAddress = Object.values(capsule.getWallets())[0].address
 		} catch (e) {
 			console.error((e as Error).message)
 		} finally {
-			loadingLogin.value = false
+			loadingLogin = false
 		}
 	}
 
 	async function logout() {
-		loadingLogout.value = true
+		loadingLogout = true
 
 		try {
 			await capsule.logout()
 		} catch (e) {
 			console.error((e as Error).message)
 		} finally {
-			loadingLogout.value = false
+			loadingLogout = false
 		}
 	}
 </script>
 
-<template>
-	<v-container>
-		<v-row>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Create User</v-card-title>
-					<v-card-text>
-						<v-form @submit.prevent="createUser">
-							<v-text-field
-								v-model="email"
-								label="Email"
+<div class="container">
+	<div class="row">
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Create User</h2>
+				<div class="card-text">
+					<form on:submit|preventDefault={createUser}>
+						<input
+							type="input text-input"
+							autocomplete="email webauthn"
+							placeholder="Email"
+							required
+							bind:value={email}
+						/>
+						<button disabled={loadingCreate} type="submit" color="primary">
+							Create User
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Verify Email</h2>
+				<div class="card-text">
+					<form on:submit|preventDefault={verifyEmail}>
+						<label>
+							Verifiaction Code
+							<input bind:value={verificationCode} type="tel" required />
+						</label>
+
+						<button disabled={loadingVerifyEmail} type="submit" color="primary"
+							>Verify Email</button
+						>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Wallet Address</h2>
+				<div class="card-text">
+					<code>{JSON.stringify(walletAddress)}</code>
+				</div>
+			</div>
+			<div class="card">
+				<h2>Recovery Key</h2>
+				<div class="card-text">
+					<code>{JSON.stringify(recoveryKey)}</code>
+				</div>
+			</div>
+		</div>
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Sign Message</h2>
+				<div class="card-text">
+					<form on:submit|preventDefault={signMessage}>
+						<label>
+							Message
+							<input
+								bind:value={message}
+								type="text"
+								id="message"
+								name="message"
 								required
-							></v-text-field>
-							<v-btn :loading="loadingCreate" type="submit" color="primary"
-								>Create User</v-btn
-							>
-						</v-form>
-					</v-card-text>
-				</v-card>
-			</v-col>
-		</v-row>
-		<v-row>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Verify Email</v-card-title>
-					<v-card-text>
-						<v-form @submit.prevent="verifyEmail">
-							<v-text-field
-								v-model="verificationCode"
-								label="Verification Code"
+							/>
+						</label>
+						<button disabled={loadingSignMessage} type="submit" color="primary"
+							>Sign Message</button
+						>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Message Signature</h2>
+				<div class="card-text">
+					<code>{JSON.stringify(signature)}</code>
+				</div>
+			</div>
+		</div>
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Login User</h2>
+				<div class="card-text">
+					<form on:submit|preventDefault={loginUser}>
+						<label>
+							Email
+							<input
+								bind:value={email}
+								type="email webauthn"
+								id="email"
+								name="email"
 								required
-							></v-text-field>
-							<v-btn :loading="loadingVerifyEmail" type="submit" color="primary"
-								>Verify Email</v-btn
-							>
-						</v-form>
-					</v-card-text>
-				</v-card>
-			</v-col>
-		</v-row>
-		<v-row>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Wallet Address</v-card-title>
-					<v-card-text>
-						<code>{{ walletAddress }}</code>
-					</v-card-text>
-				</v-card>
-				<v-card>
-					<v-card-title>Recovery Key</v-card-title>
-					<v-card-text>
-						<code>{{ recoveryKey }}</code>
-					</v-card-text>
-				</v-card>
-			</v-col>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Sign Message</v-card-title>
-					<v-card-text>
-						<v-form @submit.prevent="signMessage">
-							<v-text-field
-								v-model="message"
-								label="Message"
-								required
-							></v-text-field>
-							<v-btn :loading="loadingSignMessage" type="submit" color="primary"
-								>Sign Message</v-btn
-							>
-						</v-form>
-					</v-card-text>
-				</v-card>
-			</v-col>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Message Signature</v-card-title>
-					<v-card-text>
-						<code>{{ signature }}</code>
-					</v-card-text>
-				</v-card>
-			</v-col>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Login User</v-card-title>
-					<v-card-text>
-						<v-form @submit.prevent="loginUser">
-							<v-text-field
-								v-model="email"
-								label="Email"
-								required
-							></v-text-field>
-							<v-btn :loading="loadingLogin" type="submit" color="primary"
-								>Login</v-btn
-							>
-						</v-form>
-					</v-card-text>
-				</v-card>
-			</v-col>
-			<v-col cols="12" md="12">
-				<v-card>
-					<v-card-title>Logout User</v-card-title>
-					<v-card-text>
-						<v-form @submit.prevent="logout">
-							<v-btn :loading="loadingLogout" type="submit" color="primary"
-								>Logout</v-btn
-							>
-						</v-form>
-					</v-card-text>
-				</v-card>
-			</v-col>
-		</v-row>
-	</v-container>
-</template>
+							/>
+						</label>
+						<button disabled={loadingLogin} type="submit" color="primary"
+							>Login</button
+						>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="grid col-12">
+			<div class="card">
+				<h2>Logout User</h2>
+				<div class="card-text">
+					<form on:submit|preventDefault={logout}>
+						<button disabled={loadingLogout} type="submit" color="primary"
+							>Logout</button
+						>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

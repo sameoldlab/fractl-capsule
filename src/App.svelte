@@ -6,14 +6,14 @@
 	import { http, createConfig, createStorage } from '@wagmi/core'
 	import { mainnet, arbitrum } from '@wagmi/core/chains'
 	import Capsule, { Environment } from '@usecapsule/web-sdk'
-	import { capsuleConnector } from '@usecapsule/wagmi-v2-integration'
+	// import { capsuleConnector } from '@usecapsule/wagmi-v2-integration'
 
 	import CapsuleComp from './lib/capsule.svelte'
 
 	const storage = createStorage({ storage: localStorage })
 	const capsule = new Capsule(
 		Environment.BETA,
-		import.meta.env.CAPSULE_API_KEY,
+		import.meta.env.VITE_CAPSULE_API_KEY,
 		{}
 	)
 	
@@ -25,12 +25,12 @@
 			[arbitrum.id]: http(),
 		},
 		connectors: [
-			capsuleConnector({
-				capsule,
-				chains: [mainnet, arbitrum],
-				options: {},
-				appName: 'Fractl UI',
-			}),
+			// capsuleConnector({
+			// 	capsule,
+			// 	chains: [mainnet, arbitrum],
+			// 	options: {},
+			// 	appName: 'Fractl UI',
+			// }),
 		],
 	})
 
@@ -40,7 +40,7 @@
 <main>
 	<h1>Fractl + Capsule</h1>
 	<FractlModal {config} />
-	<CapsuleComp {capsule}/>
+	<CapsuleComp {capsule} config={wagmiConfig}/>
 </main>
 
 <style>
