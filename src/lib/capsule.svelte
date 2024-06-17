@@ -1,8 +1,25 @@
-<!-- capsule.org custom ui example in vue: https://github.com/capsule-org/vue-example/blob/main/ethers-v6/src/components/CapsuleButton.vue by https://github.com/nsquare3 -->
 <script lang="ts">
-	export let capsule: Capsule
-	export let config: Config
+	import type { CapsuleWeb } from "@usecapsule/web-sdk"
+	import type { Config } from "@wagmi/core"
 
+	export let capsule: CapsuleWeb
+	export let config: Config
+	let logs = ''
+	const log = (...args) => {
+		args.forEach(v => {
+			if (typeof v === 'string') logs += v
+			else logs += JSON.stringify(v)
+			console.log(v)
+		})
+	}
+	let errors = ''
+	const error = (...args) => {
+		args.forEach(v => {
+			if (typeof v === 'string') errors += v
+			else errors += JSON.stringify(v)
+			console.error(v)
+		})
+	}
 	let email = ''
 	let verificationCode = ''
 	let recoveryKey = ''
@@ -10,24 +27,37 @@
 	let message = ''
 	let signature = ''
 
-	let loadingCreate = false
 	let loadingVerifyEmail = false
 	let loadingSignMessage = false
 	let loadingLogin = false
 	let loadingLogout = false
+	let newUser = true
+	let passkeyUrl: string
 
-	let createError = { code: undefined, message: '' }
-	async function createUser() {
-		loadingCreate = true
+	async function getWallets() {
+		log(capsule.userId)
+		globalThis.capsule = capsule
+		log(capsule)
+	}
 
+	async function createOrLoginEmail() {
+		loadingLogin = true
 		try {
 			await capsule.logout()
-			console.log(`creating user with email"${email}"`)
-			await capsule.createUser(email)
+			newUser = !(await capsule.checkIfUserExists(email))
+
+			if (newUser) {
+				await capsule.createUser(email)
+			} else {
+				passkeyUrl = await capsule.initiateUserLogin(email)
+				log('waiting for login and setup')
+				await capsule.waitForLoginAndSetup()
+				walletAddress = (await capsule.fetchWallets())[0]?.address
+			}
 		} catch (e) {
 			console.error(e as Error)
 		} finally {
-			loadingCreate = false
+			loadingLogin = false
 		}
 	}
 
@@ -35,13 +65,11 @@
 		loadingVerifyEmail = true
 
 		try {
-			const passkeyUrl = await capsule.verifyEmail(verificationCode)
-			window.open(passkeyUrl, 'popup', 'width=575,height=820')
-
+			passkeyUrl = await capsule.verifyEmail(verificationCode)
 			recoveryKey = await capsule.waitForPasskeyAndCreateWallet()
-			walletAddress = Object.values(capsule.getWallets())[0].address
+			walletAddress = capsule.getWallets()[0]?.address
 		} catch (e) {
-			console.error((e as Error).message)
+			error((e as Error).message)
 		} finally {
 			loadingVerifyEmail = false
 		}
@@ -54,28 +82,11 @@
 			// const ethersSigner = new CapsuleEthersSigner(capsule)
 			// signature = await ethersSigner.signMessage(message)
 			signature = await signMessage(config, { message })
-			console.log('signed message', signature)
+			log('signed message', signature)
 		} catch (e) {
-			console.error((e as Error).message)
+			error((e as Error).message)
 		} finally {
 			loadingSignMessage = false
-		}
-	}
-
-	async function loginUser() {
-		loadingLogin = true
-
-		try {
-			await capsule.logout()
-			const passkeyUrl = await capsule.initiateUserLogin(email)
-			window.open(passkeyUrl, 'popup', 'width=575,height=820')
-
-			await capsule.waitForLoginAndSetup()
-			walletAddress = Object.values(capsule.getWallets())[0].address
-		} catch (e) {
-			console.error((e as Error).message)
-		} finally {
-			loadingLogin = false
 		}
 	}
 
@@ -85,31 +96,42 @@
 		try {
 			await capsule.logout()
 		} catch (e) {
-			console.error((e as Error).message)
+			error((e as Error).message)
 		} finally {
 			loadingLogout = false
 		}
 	}
 </script>
 
+<h3>Errors:</h3>
+<p>{errors}</p>
+
+<h3>Logs:</h3>
+<p>{logs}</p>
+<button on:click={getWallets}>Get Wallets</button>
 <div class="container">
 	<div class="row">
 		<div class="grid col-12">
 			<div class="card">
-				<h2>Create User</h2>
+				<h2>Login User</h2>
 				<div class="card-text">
-					<form on:submit|preventDefault={createUser}>
-						<input
-							type="input text-input"
-							autocomplete="email webauthn"
-							placeholder="Email"
-							required
-							bind:value={email}
-						/>
-						<button disabled={loadingCreate} type="submit" color="primary">
-							Create User
-						</button>
+					<form on:submit|preventDefault={createOrLoginEmail}>
+						<label>
+							Email
+							<input bind:value={email} type="email webauthn" name="email" />
+						</label>
+						<button
+							on:click={createOrLoginEmail}
+							disabled={loadingLogin}
+							type="submit"
+							color="primary">Login</button
+						>
 					</form>
+					{#if passkeyUrl}
+						<button on:click={() => testOpen(passkeyUrl)}>Complete Login</button
+						>
+						<a href={passkeyUrl} target="_blank">Complete Sign-in</a>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -175,28 +197,6 @@
 				<h2>Message Signature</h2>
 				<div class="card-text">
 					<code>{JSON.stringify(signature)}</code>
-				</div>
-			</div>
-		</div>
-		<div class="grid col-12">
-			<div class="card">
-				<h2>Login User</h2>
-				<div class="card-text">
-					<form on:submit|preventDefault={loginUser}>
-						<label>
-							Email
-							<input
-								bind:value={email}
-								type="email webauthn"
-								id="email"
-								name="email"
-								required
-							/>
-						</label>
-						<button disabled={loadingLogin} type="submit" color="primary"
-							>Login</button
-						>
-					</form>
 				</div>
 			</div>
 		</div>
