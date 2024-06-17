@@ -2,6 +2,7 @@
 	import copyEN from '../../copy/copy.EN.js'
 	import Modal from '../Common/Modal.svelte'
 	import Scannable from './Scannable.svelte'
+	import Capsule from './Capsule.svelte'
 	import type { ConfigDisconnected, Connector } from '@fractl-ui/types'
 
 	export let config: ConfigDisconnected
@@ -118,11 +119,23 @@
 					>
 				{/if}
 			{:else if activeRequest.type === 'walletConnect'}
-			<Scannable connector={activeRequest} />
+				<Scannable connector={activeRequest} />
+			{:else if activeRequest.type === 'capsule'}
+				<Capsule connector={activeRequest} />
 			{/if}
 		{:else}
 			<div class="connectors">
 				{#each config.connectors.toReversed() as connector}
+					{#if connector.type === '!capsule'}
+						<form class="reset" on:submit|preventDefault={() => {}}>
+							<input
+								class="fcl__input reset connector"
+								type="email"
+								placeholder="Email Address"
+							/>
+						</form>
+						<button class="fcl__btn-primary connector">capsule</button>
+					{:else}
 						<button
 							on:click={() => handleConnect(connector)}
 							data-uid={connector.uid}
@@ -134,6 +147,7 @@
 								<!-- Button is already labbeled by it's inner text making the image alt text repetitive -->
 								<!-- svelte-ignore a11y-missing-attribute -->
 								<img aria-hidden class="logo rounded" src={connector.icon} />
+							{/if}
 						</button>
 					{/if}
 				{/each}
@@ -183,4 +197,18 @@
 		width: 100%;
 	}
 
+	/* Should just merge this with button?? */
+	.fcl__input {
+		border: none;
+		font-size: var(--fcl-btn-font-size, 0.9em);
+		font-weight: var(--fcl-btn-font-weight, 600);
+		align-items: center;
+		background-color: var(---fcl-input-background, #0d0f16);
+		padding: 1em 1.25em;
+		color: var(--fcl-btn-color, #e9e9e9);
+		border-radius: var(
+			--fcl-btn-border-radius,
+			calc(var(--fcl-border-radius, 1.8em) - var(--fcl-modal-padding, 1.25em))
+		);
+	}
 </style>
